@@ -1,0 +1,167 @@
+layout = "default"
+components = true
+sections = false
+hideContent = true
+deletable = false
+
+[page]
+==
+<?php
+function onEnd()
+{
+    $this->page->title = $this->blogPost->post->title;
+}
+?>
+==
+{% set post = blogPost.post %}
+{% set nextPost = post.getNext() %}
+{% set prevPost = post.getPrev() %}
+
+<div class="l_container breadcrumbs_container">
+	{% partial 'site/breadcrumbs' %}
+</div>
+
+<div class="l_container">
+	<div class="row blog_row">
+		<div class="col-12 col-lg-9 blog_col">
+			<div class="headline">
+				<h1 class="title title_h1 headline__title">{{ post.title }}</h1>
+				<div class="headline__date">
+					{{ 'Опубліковано'|_ }} {{ post.published_at|date('d.m.Y, H:i') }}
+				</div>
+			</div>
+
+			<div class="content">
+				<p class="content_description">{{ post.excerpt }}</p>
+				{{ post.content_html|raw }}
+			</div>
+			{% if post.featured_images|length > 1 %}
+				<div class="blog_slider">
+					<div class="swiper-container js_news_slider gallery-top">
+						<div class="swiper-wrapper">
+							{% for item in post.featured_images %}
+								<div class="swiper-slide js_open_gallery_popup"
+								     data-index="{{ loop.index }}"
+								     data-target="galleryPopup"
+								     title="{{ item.title }}"
+								     style="background-image: url('{{ item.path|resize(775) }}');">
+
+									{% if item.title or item.description %}
+										<div class="slide_info">
+											{{ item.title }}<br>{{ item.description }}
+										</div>
+									{% endif %}
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+
+					<div class="swiper-container gallery-thumbs js_news_slider">
+						<div class="swiper-wrapper">
+							{% for item in post.featured_images %}
+								<div class="swiper-slide" style="background-image: url('{{ item.path|resize(186) }}');"></div>
+							{% endfor %}
+						</div>
+					</div>
+
+					<div class="swiper-button-next gallery-thumbs__btn swiper_btn">
+						{{ source('./themes/teplo/assets/images/svg/slider-arrow.svg') }}
+					</div>
+
+					<div class="swiper-button-prev gallery-thumbs__btn swiper_btn">
+						{{ source('./themes/teplo/assets/images/svg/slider-arrow-left.svg') }}
+					</div>
+				</div>
+
+
+				<div id="galleryPopup" class="modal_wrapper gallery_popup">
+
+					<div class="modal_body big gallery_popup__modal_body">
+
+						<div class="modal_close_icon gallery_slider__icon icon-cross"></div>
+
+						<div class="js_photo_gallery swiper-container gallery_slider">
+
+							<div class="swiper-wrapper gallery_slider_wrapper">
+
+								{% for item in post.featured_images %}
+									<div class="swiper-slide gallery_slider__slide" data-title="" data-description="">
+										<img class="img gallery_slider__image" src="{{ item.path }}" alt="{{ item.file_name }}"/>
+										<a class="link icon-download gallery_slider__download" href="{{ item.path }}" download>
+											{{ 'Завантажити оригінальне зображення'|_ }}
+										</a>
+									</div>
+								{% endfor %}
+							</div>
+
+							<div class="swiper-button-prev swiper_btn gallery_slider__btn">
+								{{ source('./themes/teplo/assets/images/svg/slider-arrow-left.svg') }}
+							</div>
+
+							<div class="swiper-button-next swiper_btn gallery_slider__btn">
+								{{ source('./themes/teplo/assets/images/svg/slider-arrow.svg') }}
+							</div>
+
+							<div class="gallery_popup_footer">
+								<div class="swiper-pagination gallery_popup_pagination"></div>
+								<div class="title gallery_popup__title" id="altTextInner"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{% elseif post.featured_images|length %}
+				{% for item in post.featured_images %}
+					<img src="{{ item.path|resize(775) }}" alt="">
+				{% endfor %}
+			{% endif %}
+
+			<div class="content_actions">
+				<button class="button btn_action icon-print" id="printBtn">
+					{{ 'Надрукувати'|_ }}
+				</button>
+
+				<button class="button btn_action icon-fb js_custom_share customShare" data-type="facebook">
+					{{ 'Поділитися'|_ }}
+				</button>
+
+				<button class="button btn_action icon-twitter js_custom_share customShare" data-type="twitter">
+					{{ 'Твітнути'|_ }}
+				</button>
+			</div>
+
+			{% if prevPost or nextPost %}
+				<div class="content_navigation">
+					<div class="row">
+						{% if prevPost %}
+							<div class="col-md-6 col-sm-6 col-6 content_navigation__prev">
+								<a class="link" href="{{ prevPost.url|url }}">
+									<div class="content_navigation__item">
+										{{ source('./themes/teplo/assets/images/svg/svg_arrow_nav.svg') }}
+										{{ 'Попередня'|_ }}
+									</div>
+									<p class="content_navigation__title">{{ prevPost.title }}</p>
+								</a>
+							</div>
+						{% endif %}
+
+						{% if nextPost %}
+							<div class="col-md-6 col-sm-6 col-6 content_navigation__next">
+								<a class="link" href="{{ nextPost.url|url }}">
+									<div class="content_navigation__item">
+										{{ 'Наступна'|_ }}
+										{{ source('./themes/teplo/assets/images/svg/svg_arrow_nav_next.svg') }}
+									</div>
+									<p class="content_navigation__title">{{ nextPost.title }}</p>
+								</a>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+
+{% put scripts %}
+    <script src="{{ 'assets/javascript/build/blogPost.bundle.js'|theme }}"></script>
+{% endput %}
